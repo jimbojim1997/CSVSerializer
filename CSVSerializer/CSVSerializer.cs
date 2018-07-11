@@ -186,7 +186,46 @@ namespace CommaSeparatedValuesSerializer
         {
             if (stream == null) throw new ArgumentNullException("stream", "stream cannot be null.");
 
-            throw new NotImplementedException();
+            //get properties to be deserialised and for column names
+            List<KeyValuePair<string, string>> properties = new List<KeyValuePair<string, string>>(); //key is the property, value is the column name
+            foreach (PropertyInfo property in typeof(T).GetRuntimeProperties())
+            {
+                bool doNotSerialize = false;
+                string columnName = null;
+                foreach (Attribute attribute in property.GetCustomAttributes())
+                {
+                    if (attribute.GetType() == typeof(DoNotSerializeAttribute)) doNotSerialize = true;
+                    else if (attribute.GetType() == typeof(ColumnNameAttribute))
+                    {
+                        columnName = (attribute as ColumnNameAttribute).ColumnName;
+                    }
+                }
+
+                if (doNotSerialize) continue;
+
+                if (columnName == null) properties.Add(new KeyValuePair<string, string>(property.Name, property.Name));
+                else properties.Add(new KeyValuePair<string, string>(property.Name, columnName));
+            }
+
+            DataTable table = Deserialize(stream);
+            List<T> data = new List<T>();
+
+            foreach (DataRow row in table.Rows)
+            {
+                T item = new T();
+                foreach (KeyValuePair<string, string> property in properties)
+                {
+                    PropertyInfo propertyInfo = typeof(T).GetProperty(property.Key);
+                    Type valueType = propertyInfo.PropertyType;
+                    string value = row[property.Value].ToString();
+                    object convertedValue = null;
+                    ConvertFromString(value, valueType, ref convertedValue);
+                    propertyInfo.SetValue(item, convertedValue);
+                }
+                data.Add(item);
+            }
+
+            return data;
         }
 
         public static IEnumerable<T> Deserialize<T>(string path) where T : new()
@@ -299,21 +338,26 @@ namespace CommaSeparatedValuesSerializer
 
         private static void ConvertFromString<T>(string value, ref object item)
         {
-            if (typeof(T) == typeof(string)) item = value;
-            if (typeof(T) == typeof(bool)) item = Convert.ToBoolean(value);
-            if (typeof(T) == typeof(sbyte)) item = Convert.ToSByte(value);
-            if (typeof(T) == typeof(byte)) item = Convert.ToByte(value);
-            if (typeof(T) == typeof(char)) item = Convert.ToChar(value);
-            if (typeof(T) == typeof(Int16)) item = Convert.ToInt16(value);
-            if (typeof(T) == typeof(Int32)) item = Convert.ToInt32(value);
-            if (typeof(T) == typeof(Int64)) item = Convert.ToInt64(value);
-            if (typeof(T) == typeof(UInt16)) item = Convert.ToUInt16(value);
-            if (typeof(T) == typeof(UInt32)) item = Convert.ToUInt32(value);
-            if (typeof(T) == typeof(UInt64)) item = Convert.ToUInt64(value);
-            if (typeof(T) == typeof(float)) item = Convert.ToSingle(value);
-            if (typeof(T) == typeof(double)) item = Convert.ToDouble(value);
-            if (typeof(T) == typeof(Decimal)) item = Convert.ToDecimal(value);
-            if (typeof(T) == typeof(DateTime)) item = Convert.ToDateTime(value);
+            ConvertFromString(value, typeof(T), ref item);
+        }
+
+        private static void ConvertFromString(string value, Type type, ref object item)
+        {
+            if (type == typeof(string)) item = value;
+            else if (type == typeof(bool)) item = Convert.ToBoolean(value);
+            else if (type == typeof(sbyte)) item = Convert.ToSByte(value);
+            else if (type == typeof(byte)) item = Convert.ToByte(value);
+            else if (type == typeof(char)) item = Convert.ToChar(value);
+            else if (type == typeof(Int16)) item = Convert.ToInt16(value);
+            else if (type == typeof(Int32)) item = Convert.ToInt32(value);
+            else if (type == typeof(Int64)) item = Convert.ToInt64(value);
+            else if (type == typeof(UInt16)) item = Convert.ToUInt16(value);
+            else if (type == typeof(UInt32)) item = Convert.ToUInt32(value);
+            else if (type == typeof(UInt64)) item = Convert.ToUInt64(value);
+            else if (type == typeof(float)) item = Convert.ToSingle(value);
+            else if (type == typeof(double)) item = Convert.ToDouble(value);
+            else if (type == typeof(Decimal)) item = Convert.ToDecimal(value);
+            else if (type == typeof(DateTime)) item = Convert.ToDateTime(value);
         }
         #endregion
     }

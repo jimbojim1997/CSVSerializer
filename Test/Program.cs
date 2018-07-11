@@ -15,6 +15,9 @@ namespace Test
             data.Add(new Data("Charlie", "Chaplin", new DateTime(1989, 4, 16), true, "Hmmm"));
 
             CSVSerializer.Serialize<Data>("output.csv", data);
+
+            List<Data> readData = new List<Data>(CSVSerializer.Deserialize<Data>("output.csv"));
+            Console.ReadLine();
         }
 
         private static void DisplayTable(DataTable table)
