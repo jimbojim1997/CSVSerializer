@@ -129,24 +129,20 @@ namespace CommaSeparatedValuesSerializer
             foreach(PropertyInfo property in typeof(T).GetRuntimeProperties())
             {
                 bool doNotSerialize = false;
-                bool hasCustomColumnName = false;
+                string columnName = null;
                 foreach(Attribute attribute in property.GetCustomAttributes())
                 {
                     if (attribute.GetType() == typeof(DoNotSerializeAttribute)) doNotSerialize = true;
                     else if (attribute.GetType() == typeof(ColumnNameAttribute))
                     {
-                        string columnName = (attribute as ColumnNameAttribute).ColumnName;
-                        properties.Add(new KeyValuePair<string, string>(property.Name, columnName));
-                        hasCustomColumnName = true;
+                        columnName = (attribute as ColumnNameAttribute).ColumnName;
                     }
                 }
 
                 if (doNotSerialize) continue;
 
-                if (!hasCustomColumnName)
-                {
-                    properties.Add(new KeyValuePair<string, string>(property.Name, property.Name));
-                }
+                if (columnName == null) properties.Add(new KeyValuePair<string, string>(property.Name, property.Name));
+                else properties.Add(new KeyValuePair<string, string>(property.Name, columnName));
             }
 
             //tabulate data
