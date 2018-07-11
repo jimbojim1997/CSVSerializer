@@ -96,6 +96,14 @@ namespace CommaSeparatedValuesSerializer
             }
             return data;
         }
+
+        public static DataTable Deserialize(string path)
+        {
+            using(FileStream stream = new FileStream(path, FileMode.Open))
+            {
+                return Deserialize(stream);
+            }
+        }
         #endregion
 
         #region Serialize Generic
