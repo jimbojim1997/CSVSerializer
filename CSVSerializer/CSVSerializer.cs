@@ -15,6 +15,9 @@ namespace CommaSeparatedValuesSerializer
         #region Serialize DataTable
         public static void Serialize(Stream stream, DataTable data)
         {
+            if (stream == null) throw new ArgumentNullException("stream", "stream cannot be null.");
+            if (data == null) throw new ArgumentNullException("data", "data cannot be null.");
+
             StringBuilder csv = new StringBuilder();
 
             //Write headers
@@ -51,7 +54,10 @@ namespace CommaSeparatedValuesSerializer
 
         public static void Serialize(string path, DataTable data)
         {
-            using(FileStream stream = new FileStream(path, FileMode.Create))
+            if (string.IsNullOrWhiteSpace(path)) throw new ArgumentNullException("path", "path cannot be null, empty or whitespace.");
+            if (data == null) throw new ArgumentNullException("data", "data cannot be null.");
+
+            using (FileStream stream = new FileStream(path, FileMode.Create))
             {
                 Serialize(stream, data);
             }
@@ -61,6 +67,8 @@ namespace CommaSeparatedValuesSerializer
         #region Deserialize DataTable
         public static DataTable Deserialize(Stream stream)
         {
+            if (stream == null) throw new ArgumentNullException("stream", "stream cannot be null.");
+
             //Read data
             string csvText = "";
             using (StreamReader reader = new StreamReader(stream))
@@ -99,7 +107,9 @@ namespace CommaSeparatedValuesSerializer
 
         public static DataTable Deserialize(string path)
         {
-            using(FileStream stream = new FileStream(path, FileMode.Open))
+            if (string.IsNullOrWhiteSpace(path)) throw new ArgumentNullException("path", "path cannot be null, empty or whitespace.");
+
+            using (FileStream stream = new FileStream(path, FileMode.Open))
             {
                 return Deserialize(stream);
             }
@@ -109,12 +119,17 @@ namespace CommaSeparatedValuesSerializer
         #region Serialize Generic
         public static void Serialize<T>(Stream stream, T data) where T : new()
         {
+            if (stream == null) throw new ArgumentNullException("stream", "stream cannot be null.");
+            if (data == null) throw new ArgumentNullException("data", "data cannot be null.");
 
         }
 
         public static void Serialize<T>(string path, T data) where T : new()
         {
-            using(FileStream stream = new FileStream(path, FileMode.Create))
+            if (string.IsNullOrWhiteSpace(path)) throw new ArgumentNullException("path", "path cannot be null, empty or whitespace.");
+            if (data == null) throw new ArgumentNullException("data", "data cannot be null.");
+
+            using (FileStream stream = new FileStream(path, FileMode.Create))
             {
                 Serialize<T>(stream, data);
             }
@@ -124,12 +139,16 @@ namespace CommaSeparatedValuesSerializer
         #region Deserialize Generic
         public static T Deserialize<T>(Stream stream) where T : new()
         {
+            if (stream == null) throw new ArgumentNullException("stream", "stream cannot be null.");
+
             throw new NotImplementedException();
         }
 
         public static T Deserialize<T>(string path) where T : new()
         {
-            using(FileStream stream = new FileStream(path, FileMode.Open))
+            if (string.IsNullOrWhiteSpace(path)) throw new ArgumentNullException("path", "path cannot be null, empty or whitespace.");
+
+            using (FileStream stream = new FileStream(path, FileMode.Open))
             {
                 return Deserialize<T>(stream);
             }
