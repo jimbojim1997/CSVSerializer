@@ -107,11 +107,33 @@ namespace CommaSeparatedValuesSerializer
         #endregion
 
         #region Serialize Generic
+        public static void Serialize<T>(Stream stream, T data) where T : new()
+        {
 
+        }
+
+        public static void Serialize<T>(string path, T data) where T : new()
+        {
+            using(FileStream stream = new FileStream(path, FileMode.Create))
+            {
+                Serialize<T>(stream, data);
+            }
+        }
         #endregion
 
         #region Deserialize Generic
+        public static T Deserialize<T>(Stream stream) where T : new()
+        {
+            throw new NotImplementedException();
+        }
 
+        public static T Deserialize<T>(string path) where T : new()
+        {
+            using(FileStream stream = new FileStream(path, FileMode.Open))
+            {
+                return Deserialize<T>(stream);
+            }
+        }
         #endregion
 
         #region Utilities
