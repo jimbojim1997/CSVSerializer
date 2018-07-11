@@ -1,7 +1,9 @@
-﻿using System;
+﻿using CommaSeparatedValuesSerializer.Attributes;
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.IO;
+using System.Reflection;
 using System.Text;
 
 namespace CommaSeparatedValuesSerializer
@@ -117,14 +119,61 @@ namespace CommaSeparatedValuesSerializer
         #endregion
 
         #region Serialize Generic
-        public static void Serialize<T>(Stream stream, T data) where T : new()
+        public static void Serialize<T>(Stream stream, IEnumerable<T> data) where T : new()
         {
             if (stream == null) throw new ArgumentNullException("stream", "stream cannot be null.");
             if (data == null) throw new ArgumentNullException("data", "data cannot be null.");
 
+            //get properties to be included and for column names
+            List<KeyValuePair<string, string>> properties = new List<KeyValuePair<string, string>>(); //key is the property, value is the column name
+            foreach(PropertyInfo property in typeof(T).GetRuntimeProperties())
+            {
+                bool doNotSerialize = false;
+                bool hasCustomColumnName = false;
+                foreach(Attribute attribute in property.GetCustomAttributes())
+                {
+                    if (attribute.GetType() == typeof(DoNotSerializeAttribute)) doNotSerialize = true;
+                    else if (attribute.GetType() == typeof(ColumnNameAttribute))
+                    {
+                        string columnName = (attribute as ColumnNameAttribute).ColumnName;
+                        properties.Add(new KeyValuePair<string, string>(property.Name, columnName));
+                        hasCustomColumnName = true;
+                    }
+                }
+
+                if (doNotSerialize) continue;
+
+                if (!hasCustomColumnName)
+                {
+                    properties.Add(new KeyValuePair<string, string>(property.Name, property.Name));
+                }
+            }
+
+            //tabulate data
+            DataTable table = new DataTable();
+
+            //add column names
+            foreach(KeyValuePair<string, string> property in properties)
+            {
+                table.Columns.Add(new DataColumn(property.Value));
+            }
+
+            //add data
+            foreach(T item in data)
+            {
+                DataRow row = table.NewRow();
+                foreach (KeyValuePair<string, string> property in properties)
+                {
+                    string value = typeof(T).GetRuntimeProperty(property.Key).GetValue(item).ToString();
+                    row[property.Value] = value;
+                }
+                table.Rows.Add(row);
+            }
+
+            Serialize(stream, table);
         }
 
-        public static void Serialize<T>(string path, T data) where T : new()
+        public static void Serialize<T>(string path, IEnumerable<T> data) where T : new()
         {
             if (string.IsNullOrWhiteSpace(path)) throw new ArgumentNullException("path", "path cannot be null, empty or whitespace.");
             if (data == null) throw new ArgumentNullException("data", "data cannot be null.");
@@ -137,14 +186,14 @@ namespace CommaSeparatedValuesSerializer
         #endregion
 
         #region Deserialize Generic
-        public static T Deserialize<T>(Stream stream) where T : new()
+        public static IEnumerable<T> Deserialize<T>(Stream stream) where T : new()
         {
             if (stream == null) throw new ArgumentNullException("stream", "stream cannot be null.");
 
             throw new NotImplementedException();
         }
 
-        public static T Deserialize<T>(string path) where T : new()
+        public static IEnumerable<T> Deserialize<T>(string path) where T : new()
         {
             if (string.IsNullOrWhiteSpace(path)) throw new ArgumentNullException("path", "path cannot be null, empty or whitespace.");
 

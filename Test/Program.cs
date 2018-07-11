@@ -1,7 +1,7 @@
 ﻿using CommaSeparatedValuesSerializer;
 using System;
 using System.Data;
-using System.IO;
+using System.Collections.Generic;
 
 namespace Test
 {
@@ -9,34 +9,12 @@ namespace Test
     {
         static void Main(string[] args)
         {
-            WriteTestData();
-            DataTable data = ReadDataTable();
-            DisplayTable(data);
-            Console.ReadLine();
-        }
+            List<Data> data = new List<Data>();
+            data.Add(new Data("Alice", "Alison", new DateTime(2001, 1, 1), true, "This is the description\n\nwith line breaks and \"quotes\""));
+            data.Add(new Data("Bob", "Brown", new DateTime(2002, 2, 2), true, "blah blah blah"));
+            data.Add(new Data("Charlie", "Chaplin", new DateTime(1989, 4, 16), true, "Hmmm"));
 
-        private static void WriteTestData()
-        {
-            DataTable data = new DataTable();
-            data.Columns.Add("Forename", typeof(string));
-            data.Columns.Add("Surname", typeof(string));
-            data.Columns.Add("Date Of Birth", typeof(DateTime));
-            data.Columns.Add("Is Alive", typeof(bool));
-            data.Columns.Add("Description", typeof(string));
-
-            data.Rows.Add("Alice", "Alison", new DateTime(2001, 1, 1), true, "This is the description\nwith line breaks and \"quotes\"");
-            data.Rows.Add("Bob", "Brown", new DateTime(2002, 2, 2), true, "blah blah blah");
-            data.Rows.Add("Charlie", "Chaplin", new DateTime(2002, 2, 2), false, "Hmmm");
-
-            CSVSerializer.Serialize("output.csv", data);
-        }
-
-        private static DataTable ReadDataTable()
-        {
-            using (FileStream stream = new FileStream("output.csv", FileMode.Open))
-            {
-                return CSVSerializer.Deserialize(stream);
-            }
+            CSVSerializer.Serialize<Data>("output.csv", data);
         }
 
         private static void DisplayTable(DataTable table)
