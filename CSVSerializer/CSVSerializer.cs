@@ -98,7 +98,11 @@ namespace CommaSeparatedValuesSerializer
                     }
                     else
                     {
-                        row[i] = column;
+                        Type columnType = data.Columns[i].DataType;
+                        if (!IsValidType(columnType)) throw new InvalidTypeException($"Type \"{columnType.FullName}\" is not a supported type. See documentation for supported types.");
+                        object convertedColumn = null;
+                        ConvertFromString(column, columnType, ref convertedColumn);
+                        row[i] = convertedColumn;
                     }
                 }
                 if (isHeaderRow) isHeaderRow = false;
@@ -217,6 +221,8 @@ namespace CommaSeparatedValuesSerializer
                 {
                     PropertyInfo propertyInfo = typeof(T).GetProperty(property.Key);
                     Type valueType = propertyInfo.PropertyType;
+                    if(!IsValidType(valueType)) throw new InvalidTypeException($"Type \"{valueType.FullName}\" is not a supported type. See documentation for supported types.");
+
                     string value = row[property.Value].ToString();
                     object convertedValue = null;
                     ConvertFromString(value, valueType, ref convertedValue);
@@ -358,6 +364,7 @@ namespace CommaSeparatedValuesSerializer
             else if (type == typeof(double)) item = Convert.ToDouble(value);
             else if (type == typeof(Decimal)) item = Convert.ToDecimal(value);
             else if (type == typeof(DateTime)) item = Convert.ToDateTime(value);
+            else throw new InvalidTypeException($"Type \"{type.FullName}\" is not a supported type. See documentation for supported types.");
         }
         #endregion
     }
