@@ -5,26 +5,25 @@ namespace Test
 {
     class Data
     {
-        public string Forename { get; set; }
-        public string Surname { get; set; }
-
-        [ColumnName("Date Of Birth")]
-        public DateTime DateOfBirth { get; set; }
-        public bool IsAlive { get; set; }
-        public string Description { get; set; }
-
-
-        public Data()
-        {
-        }
-
-        public Data(string forename, string surname, DateTime dateOfBirth, bool isAlive, string description)
-        {
-            Forename = forename;
-            Surname = surname;
-            DateOfBirth = dateOfBirth;
-            IsAlive = isAlive;
-            Description = description;
-        }
+        [ColumnName("Postcode")]
+        public string Postcode { get; set; }
+        [ColumnName("Positional_quality_indicator")]
+        public string PositionalQualityIndicator { get; set; }
+        [ColumnName("Eastings")]
+        public string Eastings { get; set; }
+        [ColumnName("Northings")]
+        public string Northings { get; set; }
+        [ColumnName("Country_code")]
+        public string CountryCode { get; set; }
+        [ColumnName("NHS_regional_HA_code")]
+        public string NHSRegionalHACode { get; set; }
+        [ColumnName("NHS_HA_code")]
+        public string NHSHACode { get; set; }
+        [ColumnName("Admin_county_code")]
+        public string AdminCountyCode { get; set; }
+        [ColumnName("Admin_district_code")]
+        public string AdminDistrictCode { get; set; }
+        [ColumnName("Admin_ward_code")]
+        public string AdminWardCode { get; set; }
     }
 }

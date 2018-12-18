@@ -274,21 +274,13 @@ namespace CommaSeparatedValuesSerializer
 
         private static string FromCSVString(string value)
         {
-            string[] valueParts = value.Split(CSV_STRING_CHAR);
-            StringBuilder result = new StringBuilder();
-
-            bool isFirstPart = true;
-            bool wasLastPartEmpty = false;
-            foreach (string part in valueParts)
+            if (value.Length > 0 && value[0] == CSV_STRING_CHAR && value[value.Length - 1] == CSV_STRING_CHAR)
             {
-                if (!isFirstPart && !wasLastPartEmpty) result.Append(CSV_STRING_CHAR);
-                else isFirstPart = false;
-
-                wasLastPartEmpty = part == "" && !wasLastPartEmpty;
-                if(part != "") result.Append(part);
+                value = value.Substring(1, value.Length - 2);
             }
+            value = value.Replace("\"\"", "\"");
 
-            return result.ToString();
+            return value;
         }
 
         private static List<List<string>> SplitCSVToItems(string csvText)
@@ -306,13 +298,13 @@ namespace CommaSeparatedValuesSerializer
                 }
                 else if(csvText[end] == CSV_VALUE_SEPARATOR && !isInCSVString)
                 {
-                    row.Add(FromCSVString(csvText.Substring(start, end - start - 1)));
+                    row.Add(FromCSVString(csvText.Substring(start, end - start)));
                     start = end + 1;
                     continue;
                 }
                 else if(csvText[end] == CSV_LINE_SEPARATOR[0] && csvText.Substring(end, CSV_LINE_SEPARATOR.Length) == CSV_LINE_SEPARATOR)
                 {
-                    row.Add(FromCSVString(csvText.Substring(start, end - start - 1)));
+                    row.Add(FromCSVString(csvText.Substring(start, end - start)));
                     table.Add(row);
                     row = new List<string>();
                     start = end = end + CSV_LINE_SEPARATOR.Length;
